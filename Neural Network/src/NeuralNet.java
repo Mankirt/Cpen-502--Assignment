@@ -13,8 +13,9 @@ public class NeuralNet {
     double activation[]=new double[hiddenNum+1];   //array to calculate activations
     double output[]=new double[hiddenNum+1];       //array to hold final answers for each input
     double weightChangeToOutput[]=new double[hiddenNum+1]; //array to store weight-change values from hidden to output
-    double weightChangeToHidden[]=new double[hiddenNum+1]; //array to store weight-change values from input to hidden
-    double sigmoid,sigmoidDerivative,deltaOutput,deltaHidden;
+    double weightChangeToHidden[][]=new double[inputNum+1][hiddenNum+1]; //array to store weight-change values from input to hidden
+    double deltaHidden[]=new double[hiddenNum+1];  //array to store delta values for each hidden layer neuron
+    double sigmoid,sigmoidDerivative,deltaOutput;
 
     public NeuralNet(){
         for (int i=0;i<hiddenNum+1;i++){
@@ -41,21 +42,25 @@ public class NeuralNet {
         }
         for (int i=0;i<hiddenNum;i++){
             System.out.print(hiddenWeights[i]+"  ");;
-        }  */
+        }
+        System.out.println();
+        System.out.println(); */
 
     }
     public int train(){
         double error=1;
         int epoch=0;
-        //while (error>0.05){
+        while (error>0.05){
             for (int i=0;i<inputValue.length;i++){
                 forwardPropagate(i,inputNum,hiddenNum);
-                /*backPropagate(i);*/
+                backPropagate(i);
             }
+            error=calculateError();
+            System.out.println(error);
             epoch++;
 
 
-       // }
+       }
         return epoch;
     }
 
@@ -87,11 +92,31 @@ public class NeuralNet {
             weightChangeToOutput[i]=(learningrate*deltaOutput*activation[i])+(momentum*weightChangeToOutput[i]);
             hiddenWeights[i]+=weightChangeToOutput[i];
         }
+        double weightAddition=0.0;
         for (int i=0;i<hiddenNum;i++) {
-            deltaHidden = derivative(activation[i])*deltaOutput*
+            deltaHidden[i] = derivative(activation[i]) * deltaOutput * hiddenWeights[i];
+            for (int j = 0; j < inputNum; j++) {
+                weightChangeToHidden[j][i] = (learningrate * deltaHidden[i] * inputValue[a][j])+(momentum * weightChangeToOutput[i]);
+                inputWeights[j][i]+=weightChangeToHidden[j][i];
+            }
         }
+        /* for (int i=0;i<inputNum;i++){
+            for (int j=0;j<hiddenNum;j++){
+                System.out.print(inputWeights[i][j]+"  ");;
+            }
+            System.out.println();
+        }
+        for (int i=0;i<hiddenNum;i++){
+            System.out.print(hiddenWeights[i]+"  ");;
+        }
+        System.out.println();System.out.println(); */
     }
-    public void calculateError(){
+    public double calculateError(){
+        double totalErr=0.0;
+        for (int i=0;i<ouputValue.length;i++){
+            totalErr+=Math.pow(ouputValue[i]-output[i],2);
+        }
+        return totalErr/2;
 
     }
 
@@ -111,7 +136,7 @@ public class NeuralNet {
     public static void main(String[] args) {
         NeuralNet obj = new NeuralNet();
         obj.iniWeight();
-        obj.train();
+        System.out.println(obj.train());
         /*   printing outputs after forward propagation
 
         for (int i=0;i<4;i++){
@@ -119,7 +144,7 @@ public class NeuralNet {
         }
         */
 
-		//test
+
     }
 
 
