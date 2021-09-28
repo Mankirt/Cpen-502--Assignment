@@ -1,6 +1,6 @@
 public class NeuralNet {
 
-    int inputValue[][]= {{0,0,1},{0,1,1},{1,0,1},{1,1,1}}; //inputs (havnt added bias)
+    int inputValue[][]= {{0,0,1},{0,1,1},{1,0,1},{1,1,1}}; //inputs 
     double ouputValue[]={0.0,1.0,1.0,0.0};  //output
     int inputNum=2;  //number of inputs
     int hiddenNum=4;    //number of hidden neuron
