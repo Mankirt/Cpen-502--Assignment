@@ -1,6 +1,6 @@
 public class NeuralNet {
 
-    int inputValue[][]= {{0,0},{0,1},{1,0},{1,1}}; //inputs (havnt added bias)
+    int inputValue[][]= {{0,0,1},{0,1,1},{1,0,1},{1,1,1}}; //inputs (havnt added bias)
     double ouputValue[]={0.0,1.0,1.0,0.0};  //output
     int inputNum=2;  //number of inputs
     int hiddenNum=4;    //number of hidden neuron
@@ -8,8 +8,8 @@ public class NeuralNet {
     double momentum=0.0;
     double argA=-0.5;      //lower limit
     double argB=0.5;      //upper limit
-    double inputWeights[][]=new double[inputNum][hiddenNum]; /*from input to hidden*/
-    double hiddenWeights[]=new double[hiddenNum];  /*from hidden to output*/
+    double inputWeights[][]=new double[inputNum+1][hiddenNum+1]; /*from input to hidden*/
+    double hiddenWeights[]=new double[hiddenNum+1];  /*from hidden to output*/
     double activation[]=new double[hiddenNum+1];   //array to calculate activations
     double output[]=new double[hiddenNum+1];       //array to hold final answers for each input
     double weightChangeToOutput[]=new double[hiddenNum+1]; //array to store weight-change values from hidden to output
@@ -21,16 +21,17 @@ public class NeuralNet {
         for (int i=0;i<hiddenNum+1;i++){
             weightChangeToOutput[i]=0.0;
         }
+        activation[hiddenNum]=1.0;
     }
     // Initializing random weights
     public void iniWeight(){
 
-        for (int i=0;i<inputNum;i++){
-            for (int j=0;j<hiddenNum;j++){
+        for (int i=0;i<inputNum+1;i++){
+            for (int j=0;j<hiddenNum+1;j++){
                 inputWeights[i][j]=(Math.random()*(argB-argA))+argA;
             }
         }
-        for (int i=0;i<hiddenNum;i++){
+        for (int i=0;i<hiddenNum+1;i++){
             hiddenWeights[i]=(Math.random()*(argB-argA))+argA;
         }
        /*  printing the weights
@@ -77,7 +78,7 @@ public class NeuralNet {
         }
         double answer=0.0;
         //Calculating summation of weights and input from hidden to output
-        for (int i=0;i<out;i++){
+        for (int i=0;i<out+1;i++){
             answer+=activation[i]*hiddenWeights[i];
         }
         answer=sigmoid(answer); // Activation function
@@ -87,15 +88,16 @@ public class NeuralNet {
 
 
     public void backPropagate(int a){
-        deltaOutput=derivative(output[a])*(ouputValue[a]-output[a]);
-        for (int i=0;i<hiddenNum;i++){
+        deltaOutput=derivative(output[a])*(ouputValue[a]-output[a]);   //delta for output
+        // calculating weight change and updating corresponding weights
+        for (int i=0;i<hiddenNum+1;i++){
             weightChangeToOutput[i]=(learningrate*deltaOutput*activation[i])+(momentum*weightChangeToOutput[i]);
             hiddenWeights[i]+=weightChangeToOutput[i];
         }
-        double weightAddition=0.0;
-        for (int i=0;i<hiddenNum;i++) {
+        // calculating delta for hidden neurons and updating weights       
+        for (int i=0;i<hiddenNum+1;i++) {
             deltaHidden[i] = derivative(activation[i]) * deltaOutput * hiddenWeights[i];
-            for (int j = 0; j < inputNum; j++) {
+            for (int j = 0; j < inputNum+1; j++) {
                 weightChangeToHidden[j][i] = (learningrate * deltaHidden[i] * inputValue[a][j])+(momentum * weightChangeToOutput[i]);
                 inputWeights[j][i]+=weightChangeToHidden[j][i];
             }
@@ -113,6 +115,7 @@ public class NeuralNet {
     }
     public double calculateError(){
         double totalErr=0.0;
+        // err=(C^2-y^2)/2
         for (int i=0;i<ouputValue.length;i++){
             totalErr+=Math.pow(ouputValue[i]-output[i],2);
         }
@@ -121,17 +124,15 @@ public class NeuralNet {
     }
 
     public double sigmoid(double s){
-        sigmoid=1/(1+Math.pow(Math.E,(-s)));
+        sigmoid=((argB-argA)/(1+Math.pow(Math.E,(-s))))+argA;
         sigmoidDerivative=derivative(sigmoid);
         return (1/(1+Math.pow(Math.E,(-s))));
     }
 
     public double derivative(double x){
+
         return x*(1-x);
     }
-
-
-
 
     public static void main(String[] args) {
         NeuralNet obj = new NeuralNet();
