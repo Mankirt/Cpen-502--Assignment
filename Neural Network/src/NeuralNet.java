@@ -19,10 +19,17 @@ public class NeuralNet {
     double weightChangeToHidden[][]=new double[inputNum+1][hiddenNum+1]; //array to store weight-change values from input to hidden
     double deltaHidden[]=new double[hiddenNum+1];  //array to store delta values for each hidden layer neuron
     double deltaOutput;
+    //double delta_in_j[]=new double[hiddenNum+1];
+    //double deltaHiddenToOutput;
 
     public NeuralNet(){
         for (int i=0;i<hiddenNum+1;i++){
             weightChangeToOutput[i]=0.0;
+        }
+        for (int i=0;i<inputNum+1;i++){
+            for(int j=0;j<hiddenNum+1;j++){
+                weightChangeToHidden[i][j]=0.0;
+            }
         }
         activation[hiddenNum]=1.0;
     }
@@ -76,7 +83,7 @@ public class NeuralNet {
         for (int i=0;i<out;i++){
             activation[i]=0.0;
             //calculating summation of weights and input value
-            for (int j=0;j<in;j++){
+            for (int j=0;j<in+1;j++){
                 activation[i]+=inputValue[a][j]*inputWeights[j][i];
             }
             activation[i]=sigmoid(activation[i]); //Activation function
@@ -94,6 +101,7 @@ public class NeuralNet {
 
     public void backPropagate(int a){
         deltaOutput=derivative(output[a])*(ouputValue[a]-output[a]);   //delta for output
+        
         // calculating weight change and updating corresponding weights
         for (int i=0;i<hiddenNum+1;i++){
             weightChangeToOutput[i]=(learningrate*deltaOutput*activation[i])+(momentum*weightChangeToOutput[i]);
@@ -130,21 +138,21 @@ public class NeuralNet {
 
     public double sigmoid(double s){
         if (binary) {
-            return (1.0/(1 + Math.pow(Math.E, (-s))));
+            return (1.0/(1 + Math.pow(Math.E,(-s))));
             //return  (((argB - argA) / (1 + Math.pow(Math.E, (-s)))) - argA);
         }
 
-        return ((2.0/(1+Math.pow(Math.E,(-s))))+1);
+        return ((2.0/(1+Math.pow(Math.E,(-s))))-1);
         //return (((argB-argA)/(1+Math.pow(Math.E,(-s))))+argA);
     }
 
     public double derivative(double x){
         if (binary) {
 
-            return x * (1.0 - x);
+            return (x * (1.0 - x));
         }
 
-        return (((1.0+x)*(1.0-x))/2.0);
+        return ((1.0+x)*(1.0-x)*0.5);
         //return (1/(argB-argA))*(x-argA)*(argB-x);
     }
 
