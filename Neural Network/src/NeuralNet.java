@@ -1,13 +1,16 @@
 public class NeuralNet {
 
-    int inputValue[][]= {{0,0,1},{0,1,1},{1,0,1},{1,1,1}}; //inputs 
-    double ouputValue[]={0.0,1.0,1.0,0.0};  //output
+    //int inputValue[][]= {{0,0,1},{0,1,1},{1,0,1},{1,1,1}}; //inputs
+    //double ouputValue[]={0.0,1.0,1.0,0.0};  //output
+    double inputValue[][]= {{-1.0,-1.0,1.0},{-1.0,1.0,1.0},{1.0,-1.0,1.0},{1.0,1.0,1.0}}; // bipolar inputs
+    double ouputValue[]={-1.0,1.0,1.0,-1.0};  //bipolar output
+    boolean binary=false;
     int inputNum=2;  //number of inputs
     int hiddenNum=4;    //number of hidden neuron
     double learningrate=0.2;
     double momentum=0.0;
-    double argA=-0.5;      //lower limit
-    double argB=0.5;      //upper limit
+    double argA=0;      //lower limit
+    double argB=1.0;      //upper limit
     double inputWeights[][]=new double[inputNum+1][hiddenNum+1]; /*from input to hidden*/
     double hiddenWeights[]=new double[hiddenNum+1];  /*from hidden to output*/
     double activation[]=new double[hiddenNum+1];   //array to calculate activations
@@ -15,7 +18,7 @@ public class NeuralNet {
     double weightChangeToOutput[]=new double[hiddenNum+1]; //array to store weight-change values from hidden to output
     double weightChangeToHidden[][]=new double[inputNum+1][hiddenNum+1]; //array to store weight-change values from input to hidden
     double deltaHidden[]=new double[hiddenNum+1];  //array to store delta values for each hidden layer neuron
-    double sigmoid,sigmoidDerivative,deltaOutput;
+    double deltaOutput;
 
     public NeuralNet(){
         for (int i=0;i<hiddenNum+1;i++){
@@ -28,11 +31,13 @@ public class NeuralNet {
 
         for (int i=0;i<inputNum+1;i++){
             for (int j=0;j<hiddenNum+1;j++){
-                inputWeights[i][j]=(Math.random()*(argB-argA))+argA;
+                //inputWeights[i][j]=(Math.random()*(argB-argA))+argA;
+                inputWeights[i][j]=Math.random()-0.5;
             }
         }
         for (int i=0;i<hiddenNum+1;i++){
-            hiddenWeights[i]=(Math.random()*(argB-argA))+argA;
+            //hiddenWeights[i]=(Math.random()*(argB-argA))+argA;
+            hiddenWeights[i]=Math.random()-0.5;
         }
        /*  printing the weights
        for (int i=0;i<inputNum;i++){
@@ -61,7 +66,7 @@ public class NeuralNet {
             epoch++;
 
 
-       }
+        }
         return epoch;
     }
 
@@ -94,11 +99,11 @@ public class NeuralNet {
             weightChangeToOutput[i]=(learningrate*deltaOutput*activation[i])+(momentum*weightChangeToOutput[i]);
             hiddenWeights[i]+=weightChangeToOutput[i];
         }
-        // calculating delta for hidden neurons and updating weights       
+        // calculating delta for hidden neurons and updating weights
         for (int i=0;i<hiddenNum+1;i++) {
             deltaHidden[i] = derivative(activation[i]) * deltaOutput * hiddenWeights[i];
             for (int j = 0; j < inputNum+1; j++) {
-                weightChangeToHidden[j][i] = (learningrate * deltaHidden[i] * inputValue[a][j])+(momentum * weightChangeToOutput[i]);
+                weightChangeToHidden[j][i] = (learningrate * deltaHidden[i] * inputValue[a][j])+(momentum * weightChangeToHidden[j][i]);
                 inputWeights[j][i]+=weightChangeToHidden[j][i];
             }
         }
@@ -124,14 +129,23 @@ public class NeuralNet {
     }
 
     public double sigmoid(double s){
-        sigmoid=((argB-argA)/(1+Math.pow(Math.E,(-s))))+argA;
-        sigmoidDerivative=derivative(sigmoid);
-        return (1/(1+Math.pow(Math.E,(-s))));
+        if (binary) {
+            return (1.0/(1 + Math.pow(Math.E, (-s))));
+            //return  (((argB - argA) / (1 + Math.pow(Math.E, (-s)))) - argA);
+        }
+
+        return ((2.0/(1+Math.pow(Math.E,(-s))))+1);
+        //return (((argB-argA)/(1+Math.pow(Math.E,(-s))))+argA);
     }
 
     public double derivative(double x){
+        if (binary) {
 
-        return x*(1-x);
+            return x * (1.0 - x);
+        }
+
+        return (((1.0+x)*(1.0-x))/2.0);
+        //return (1/(argB-argA))*(x-argA)*(argB-x);
     }
 
     public static void main(String[] args) {
